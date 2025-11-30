@@ -13,7 +13,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
+            min-height: 10vh;
             background-color: #f4f7f6;
             margin: 0;
         }
@@ -129,8 +129,8 @@
     <h2>Belstar Loan Payment QR Code 💰</h2>
     
     <div class="form-group">
-        <label for="loanId">Loan ID:</label>
-        <input type="text" id="loanId" placeholder="e.g., 12345" required>
+        <label for="loanId">Loan ID (Min 12 Digits):</label>
+        <input type="text" id="loanId" placeholder="e.g., 123456789012" required>
     </div>
     
     <div class="form-group">
@@ -177,8 +177,15 @@
         }
         
         try {
+            // Check if the browser supports the Web Share API
+            if (!navigator.share) {
+                alert("Your browser does not support the Web Share API. Please download the QR image and share it manually.");
+                return;
+            }
+
             // 1. Convert the canvas content into a Blob (file object)
             const blob = await new Promise(resolve => {
+                // Ensure a PNG image is generated for better compatibility
                 qrCanvasElement.toBlob(resolve, 'image/png');
             });
 
@@ -186,7 +193,7 @@
             const file = new File([blob], `UPI_QR_${loanId}_${cleanAmount}.png`, { type: 'image/png' });
 
             // 3. Check if the browser can share files
-            if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
                 
                 await navigator.share({
                     files: [file],
@@ -196,8 +203,10 @@
                 console.log('UPI QR Image shared successfully!');
 
             } else {
-                // Fallback
-                alert("Your browser supports sharing but not file sharing. Please download the QR image and share it manually.");
+                // Fallback for sharing text/link if file sharing is not supported
+                // Since this QR code is specifically for payment, text/link sharing might be less useful, 
+                // so we stick to the download suggestion if file sharing fails.
+                alert("Your browser supports sharing but not file *sharing*. Please download the QR image and share it manually.");
             }
         } catch (error) {
             console.error('Error sharing UPI QR image:', error);
@@ -226,6 +235,15 @@
             actionButtonsContainer.innerHTML = ''; 
             return;
         }
+
+        // NEW VALIDATION: Check Loan ID length (minimum 12 digits)
+        if (loanId.length < 12) {
+            alert("Loan ID must be at least 12 digits long.");
+            qrContainer.innerHTML = 'Input required.'; 
+            actionButtonsContainer.innerHTML = ''; 
+            return;
+        }
+
 
         // 2. Format the UPI data string
         const cleanAmount = parseFloat(amount).toFixed(2);
@@ -279,14 +297,13 @@
         downloadLink.textContent = '⬇️ Download QR Code';
         actionButtonsContainer.appendChild(downloadLink);
         
-        // --- B. ADD SHARE IMAGE BUTTON ---
-        if (navigator.share) {
-            const shareButton = document.createElement('button');
-            shareButton.id = 'shareButton';
-            shareButton.textContent = '🖼️ Share QR Image';
-            shareButton.onclick = () => shareUpiImage(loanId, cleanAmount); 
-            actionButtonsContainer.appendChild(shareButton);
-        }
+        // --- B. ADD SHARE IMAGE BUTTON (Always create the button) ---
+        // Changed logic: The button is always added, and the shareUpiImage function handles the feature check.
+        const shareButton = document.createElement('button');
+        shareButton.id = 'shareButton';
+        shareButton.textContent = '🖼️ Share QR Image';
+        shareButton.onclick = () => shareUpiImage(loanId, cleanAmount); 
+        actionButtonsContainer.appendChild(shareButton);
 
         // --- C. ADD RESET BUTTON ---
         const resetButton = document.createElement('button');

@@ -1,0 +1,21 @@
+{
+  "name": "Belstar QR Maker",
+  "short_name": "Belstar QR",
+  "description": "Generate UPI QR Codes for Belstar loan payments.",
+  "start_url": "/BelstarQRMaker.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#3D88D7",
+  "icons": [
+    {
+      "src": "/images/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/images/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

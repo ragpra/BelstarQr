@@ -1,7 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UPI Payment QR Code Generator</title>
+    <script src="https://unpkg.com/qrious@4.0.2/dist/qrious.min.js"></script>
+    <link rel="manifest" href="./manifest.json"> 
+    <style>
+        /* ... (CSS remains the same) ... */
+        body {
+            font-family: sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 10vh;
+            background-color: #f4f7f6;
+            margin: 0;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0 0 0 / 10%);
+            width: 100%;
+            max-width: 400px;
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 25px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box; 
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #3D88D7; 
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #2D77C6;
+        }
+        #qrcode-container {
+            margin-top: 30px;
+            text-align: center;
+            padding: 20px;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            min-height: 150px; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        #action-buttons {
+            margin-top: 15px;
+            display: flex;
+            justify-content: space-between;
+            gap: 10px; 
+        }
+        #action-buttons a, #action-buttons button {
+            flex-grow: 1; 
+            display: block; 
+            padding: 10px 15px;
+            border-radius: 4px;
+            font-size: 14px;
+            text-align: center;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        #downloadLink {
+            background-color: #28a745; 
+            color: white;
+            border: none;
+        }
+        #downloadLink:hover {
+            background-color: #1e7e34;
+        }
+        #shareButton {
+            background-color: #ffc107; /* Yellow/Warning color for share */
+            color: #333;
+            border: none;
+        }
+        #shareButton:hover {
+            background-color: #e0a800;
+        }
+        /* NEW: Style for the Reset Button */
+        #resetButton {
+            background-color: #dc3545; /* Red/Danger color for reset */
+            color: white;
+            border: none;
+        }
+        #resetButton:hover {
+            background-color: #c82333;
+        }
+
+        .note {
+            margin-top: 15px;
+            font-size: 0.85em;
+            color: #777;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Belstar Loan Payment QR Code 💰</h2>
+    
+    <div class="form-group">
+        <label for="loanId">Loan ID:</label>
+        <input type="text" id="loanId" placeholder="e.g., 12345" required>
+    </div>
+    
+    <div class="form-group">
+        <label for="amount">Payment Amount (INR):</label>
+        <input type="number" id="amount" placeholder="e.g., 1500.00" step="0.01" required>
+    </div>
+    
+    <button onclick="generateQRCode()">Generate QR Code</button>
+    
+    <div id="qrcode-container">
+    </div>
+    
+    <div id="action-buttons">
+    </div>
+
+    <p class="note">Scannable by any UPI app like Google Pay, PhonePe, or Paytm. Created by Ravi</p>
+
+</div>
+
 <script>
-
-    // ... (rest of the resetForm and shareUpiImage functions remain the same) ...
-
     /**
      * Resets the input fields and clears the QR code area.
      */
@@ -69,7 +218,7 @@
         const qrContainer = document.getElementById('qrcode-container');
         const actionButtonsContainer = document.getElementById('action-buttons'); 
         
-        // **NEW: Define the fixed Payer UPI ID**
+        // Define the fixed Payer UPI ID
         const fixedUpiId = 'BelstarQRstat@icici'; 
 
         // Basic validation
@@ -84,7 +233,7 @@
         const cleanAmount = parseFloat(amount).toFixed(2);
         
         const upiLink = 
-            `upi://pay?pa=${fixedUpiId}` + // Use the defined UPI ID
+            `upi://pay?pa=${fixedUpiId}` + 
             `&pn=${loanId}` + 
             `&tr=MNO${loanId}` + 
             `&am=${cleanAmount}` + 
@@ -113,7 +262,7 @@
             background: '#ffffff'   // Light color
         });
         
-        // --- 5. NEW: Display UPI ID and Loan ID ---
+        // Display UPI ID and Loan ID
         
         const upiIdMessage = document.createElement('p');
         upiIdMessage.style.fontSize = '0.9em';
@@ -133,7 +282,7 @@
         qrContainer.appendChild(dataMessage);
 
 
-        // 6. Add action buttons (Download, Share, Reset)
+        // 5. Add action buttons (Download, Share, Reset)
         
         // --- A. ADD DOWNLOAD BUTTON ---
         // QRious generates a canvas. We get its URL for the download link.
@@ -170,7 +319,8 @@
         // 🟢 PWA Addition: Register the Service Worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/service-worker.js')
+                // FIX 2: Changed ServiceWorker registration path from /service-worker.js to ./service-worker.js
+                navigator.serviceWorker.register('./service-worker.js')
                 .then(registration => {
                     console.log('ServiceWorker registration successful with scope: ', registration.scope);
                 }, err => {
@@ -180,3 +330,6 @@
         }
     });
 </script>
+
+</body>
+</html>

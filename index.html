@@ -1,212 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UPI Payment QR Code Generator</title>
-    <script src="https://unpkg.com/qrious@4.0.2/dist/qrious.min.js"></script>
-    <link rel="manifest" href="./manifest.json"> 
-    <style>
-        /* ... (CSS remains the same) ... */
-        body {
-            font-family: sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 10vh;
-            background-color: #f4f7f6;
-            margin: 0;
-        }
-        .container {
-            background-color: #ffffff;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0 0 0 / 10%);
-            width: 100%;
-            max-width: 400px;
-        }
-        h2 {
-            text-align: center;
-            color: #333;
-            margin-bottom: 25px;
-        }
-        .form-group {
-            margin-bottom: 20px;
-        }
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-            color: #555;
-        }
-        input[type="text"], input[type="number"] {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box; 
-        }
-        button {
-            width: 100%;
-            padding: 10px;
-            background-color: #3D88D7; 
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        button:hover {
-            background-color: #2D77C6;
-        }
-        #qrcode-container {
-            margin-top: 30px;
-            text-align: center;
-            padding: 20px;
-            border: 1px solid #eee;
-            border-radius: 4px;
-            min-height: 150px; 
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-        #action-buttons {
-            margin-top: 15px;
-            display: flex;
-            justify-content: space-between;
-            gap: 10px; 
-        }
-        #action-buttons a, #action-buttons button {
-            flex-grow: 1; 
-            display: block; 
-            padding: 10px 15px;
-            border-radius: 4px;
-            font-size: 14px;
-            text-align: center;
-            text-decoration: none;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        #downloadLink {
-            background-color: #28a745; 
-            color: white;
-            border: none;
-        }
-        #downloadLink:hover {
-            background-color: #1e7e34;
-        }
-        #shareButton {
-            background-color: #ffc107; /* Yellow/Warning color for share */
-            color: #333;
-            border: none;
-        }
-        #shareButton:hover {
-            background-color: #e0a800;
-        }
-        /* NEW: Style for the Reset Button */
-        #resetButton {
-            background-color: #dc3545; /* Red/Danger color for reset */
-            color: white;
-            border: none;
-        }
-        #resetButton:hover {
-            background-color: #c82333;
-        }
-
-        .note {
-            margin-top: 15px;
-            font-size: 0.85em;
-            color: #777;
-            text-align: center;
-        }
-    </style>
-</head>
-<body>
-
-<div class="container">
-    <h2>Belstar Loan Payment QR Code 💰</h2>
-    
-    <div class="form-group">
-        <label for="loanId">Loan ID:</label>
-        <input type="text" id="loanId" placeholder="e.g., 12345" required>
-    </div>
-    
-    <div class="form-group">
-        <label for="amount">Payment Amount (INR):</label>
-        <input type="number" id="amount" placeholder="e.g., 1500.00" step="0.01" required>
-    </div>
-    
-    <button onclick="generateQRCode()">Generate QR Code</button>
-    
-    <div id="qrcode-container">
-    </div>
-    
-    <div id="action-buttons">
-    </div>
-
-    <p class="note">Scannable by any UPI app like Google Pay, PhonePe, or Paytm. Created by Ravi</p>
-
-</div>
-
-<script>
-    /**
-     * Resets the input fields and clears the QR code area.
-     */
-    function resetForm() {
-        document.getElementById('loanId').value = '';
-        document.getElementById('amount').value = '';
-        document.getElementById('qrcode-container').innerHTML = '';
-        document.getElementById('action-buttons').innerHTML = '';
-        document.getElementById('qrcode-container').innerHTML = 'Input required.'; 
-    }
-
-    /**
-     * Converts the QR code canvas to a file Blob and shares it using the Web Share API.
-     * The logic for this function is simplified as QRious always generates a canvas.
-     */
-    async function shareUpiImage(loanId, cleanAmount) {
-        // The QRious library generates a <canvas> directly inside the container.
-        const qrCanvasElement = document.getElementById('qrcode-container').querySelector('canvas');
-        
-        if (!qrCanvasElement) {
-            alert('QR Code image not found for sharing.');
-            return;
-        }
-        
-        try {
-            // 1. Convert the canvas content into a Blob (file object)
-            const blob = await new Promise(resolve => {
-                qrCanvasElement.toBlob(resolve, 'image/png');
-            });
-
-            // 2. Create a File object from the Blob
-            const file = new File([blob], `UPI_QR_${loanId}_${cleanAmount}.png`, { type: 'image/png' });
-
-            // 3. Check if the browser can share files
-            if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-                
-                await navigator.share({
-                    files: [file],
-                    title: 'UPI Payment QR Code',
-                    text: `Scan this QR code to pay for Loan ID: ${loanId} (₹${cleanAmount}).`,
-                });
-                console.log('UPI QR Image shared successfully!');
-
-            } else {
-                // Fallback
-                alert("Your browser supports sharing but not file sharing. Please download the QR image and share it manually.");
-            }
-        } catch (error) {
-            console.error('Error sharing UPI QR image:', error);
-            if (error.name !== 'AbortError') {
-                alert('Could not share image. Check console for details.');
-            }
-        }
-    }
-
-
     /**
      * Main function to handle input, create UPI Deep Link, generate QR code, 
      * and set up the download and share buttons.
@@ -220,17 +11,37 @@
         
         // Define the fixed Payer UPI ID
         const fixedUpiId = 'BelstarQRstat@icici'; 
+        
+        // 2. Input Validation 
+        
+        const numericAmount = parseFloat(amount); // Convert to number once
 
-        // Basic validation
-        if (!loanId || !amount || parseFloat(amount) <= 0) {
-            alert("Please enter a valid Loan ID and an amount greater than zero.");
+        // Check 1: Ensure Loan ID and Amount fields are not empty
+        if (!loanId || !amount) {
+            alert("Please enter both a valid Loan ID and an amount.");
             qrContainer.innerHTML = 'Input required.'; 
             actionButtonsContainer.innerHTML = ''; 
             return;
         }
 
-        // 2. Format the UPI data string
-        const cleanAmount = parseFloat(amount).toFixed(2);
+        // Check 2: NEW/REFINED AMOUNT VALIDATION
+        if (isNaN(numericAmount) || numericAmount <= 0) {
+            alert("The Payment Amount must be a valid number greater than zero.");
+            qrContainer.innerHTML = 'Input required.'; 
+            actionButtonsContainer.innerHTML = ''; 
+            return;
+        }
+
+        // Check 3: Loan ID length check (at least 12 digits)
+        if (loanId.length < 12) {
+            alert("The Loan ID must be at least 12 digits long.");
+            qrContainer.innerHTML = 'Input required.'; 
+            actionButtonsContainer.innerHTML = ''; 
+            return;
+        }
+        
+        // 3. Format the UPI data string
+        const cleanAmount = numericAmount.toFixed(2); // Use the parsed number
         
         const upiLink = 
             `upi://pay?pa=${fixedUpiId}` + 
@@ -242,28 +53,26 @@
         
         console.log("UPI Deep Link:", upiLink); 
         
-        // 3. Clear existing content and create the target canvas element
+        // 4. Clear existing content and create the target canvas element
+        // ... (QR code generation logic remains the same) ...
         qrContainer.innerHTML = '';
         actionButtonsContainer.innerHTML = '';
         
         const canvasElement = document.createElement('canvas');
-        canvasElement.id = 'qr-canvas'; // Give it an ID for the QRious library
+        canvasElement.id = 'qr-canvas'; 
         qrContainer.appendChild(canvasElement);
 
-        // 4. Generate the new QR code using QRious
-        // The QRious library uses a configuration object to define the QR code.
         new QRious({
-            element: canvasElement, // Target the canvas element we just created
-            value: upiLink,         // The data to encode
-            size: 200,              // Size in pixels
-            level: 'H',             // Error correction level: H (High)
-            padding: 10,            // Padding around the QR code
-            foreground: '#000000',  // Dark color
-            background: '#ffffff'   // Light color
+            element: canvasElement,
+            value: upiLink,         
+            size: 200,              
+            level: 'H',             
+            padding: 10,            
+            foreground: '#000000',  
+            background: '#ffffff'   
         });
         
         // Display UPI ID and Loan ID
-        
         const upiIdMessage = document.createElement('p');
         upiIdMessage.style.fontSize = '0.9em';
         upiIdMessage.style.fontWeight = 'bold';
@@ -275,7 +84,6 @@
         loanIdMessage.textContent = `Loan ID for Payment: ${loanId}`;
         qrContainer.appendChild(loanIdMessage);
         
-        // The original success message, now placed below the details
         const dataMessage = document.createElement('p');
         dataMessage.style.marginTop = '10px';
         dataMessage.textContent = 'UPI QR Code Generated Successfully!';
@@ -283,9 +91,7 @@
 
 
         // 5. Add action buttons (Download, Share, Reset)
-        
-        // --- A. ADD DOWNLOAD BUTTON ---
-        // QRious generates a canvas. We get its URL for the download link.
+        // ... (Button logic remains the same) ...
         const imageUrl = canvasElement.toDataURL("image/png");
 
         const downloadLink = document.createElement('a');
@@ -295,7 +101,6 @@
         downloadLink.textContent = '⬇️ Download QR Code';
         actionButtonsContainer.appendChild(downloadLink);
         
-        // --- B. ADD SHARE IMAGE BUTTON ---
         if (navigator.share) {
             const shareButton = document.createElement('button');
             shareButton.id = 'shareButton';
@@ -304,32 +109,9 @@
             actionButtonsContainer.appendChild(shareButton);
         }
 
-        // --- C. ADD RESET BUTTON ---
         const resetButton = document.createElement('button');
         resetButton.id = 'resetButton';
         resetButton.textContent = '🔄 Reset Form';
-        resetButton.onclick = resetForm; // Call the new reset function
+        resetButton.onclick = resetForm; 
         actionButtonsContainer.appendChild(resetButton);
     }
-    
-    // Initial message on load
-    document.addEventListener('DOMContentLoaded', () => {
-        document.getElementById('qrcode-container').innerHTML = 'Input required.';
-        
-        // 🟢 PWA Addition: Register the Service Worker
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                // FIX 2: Changed ServiceWorker registration path from /service-worker.js to ./service-worker.js
-                navigator.serviceWorker.register('./service-worker.js')
-                .then(registration => {
-                    console.log('ServiceWorker registration successful with scope: ', registration.scope);
-                }, err => {
-                    console.log('ServiceWorker registration failed: ', err);
-                });
-            });
-        }
-    });
-</script>
-
-</body>
-</html>

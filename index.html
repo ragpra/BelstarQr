@@ -53,7 +53,7 @@
     <div class="form-group">
         <label for="loanId">Loan ID:</label>
         <input type="text" id="loanId" placeholder="Enter Loan ID">
-        <div id="loanIdError" class="error">Invalid Loan ID. Not found in Dec Demand record.</div>
+        <div id="loanIdError" class="error">Invalid Loan ID. Not found in record.</div>
     </div>
 
     <div class="form-group">
@@ -83,7 +83,7 @@
     // Load and Parse the CSV file on startup
     async function loadLoanData() {
         try {
-            const response = await fetch('Dec Demand.xlsx - Sheet1.csv');
+            const response = await fetch('Sheet1.csv');
             const csvText = await response.text();
             
             Papa.parse(csvText, {

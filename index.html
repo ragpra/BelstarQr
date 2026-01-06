@@ -121,7 +121,7 @@
         errorDiv.style.display = 'none';
         
         // Generate UPI URL
-        const upiUrl = `upi://pay?pa=BelstarQRstat@icici&pn=${record['Member Name']}&am=${amount}&tr=${loanIdInput}&cu=INR`;
+        const upiUrl = `upi://pay?pa=BelstarQRstat@icici&pn=${record['Loan Id']}&tr=MNO${loanIdInput}&am=${amount}&cu=INR&mc =5411`;
 
         const qr = new QRious({
             element: document.getElementById('qrcode'),
